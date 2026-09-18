@@ -20,7 +20,7 @@ source:
 
 build:
   error_overlinking: true  # [not win]
-  number: 8
+  number: 9
 
 requirements:
   build:
