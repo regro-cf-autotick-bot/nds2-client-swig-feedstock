@@ -104,6 +104,10 @@ outputs:
       script:
         file: build-python
       skip: python_impl != 'cpython'
+      files:
+        - etc/nds2-client/
+        - lib/python*/site-packages/
+        - lib/python*/site-packages/
     requirements:
       build:
         - ${{ compiler("c") }}
