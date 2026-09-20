@@ -1,29 +1,16 @@
-MACOSX_DEPLOYMENT_TARGET:
-- '11.0'
-MACOSX_SDK_VERSION:
-- '11.0'
 c_compiler:
-- clang
-c_compiler_version:
-- '21'
+- vs2022
 c_stdlib:
-- macosx_deployment_target
-c_stdlib_version:
-- '11.0'
+- vs
 channel_sources:
 - conda-forge
 - conda-forge
 - conda-forge
 - conda-forge
-- conda-forge,conda-forge/label/python_rc
 channel_targets:
 - conda-forge main
 cxx_compiler:
-- clangxx
-cxx_compiler_version:
-- '21'
-macos_machine:
-- x86_64-apple-darwin13.4.0
+- vs2022
 numpy:
 - '2'
 pin_run_as_build:
@@ -35,13 +22,10 @@ python:
 - 3.12.* *_cpython
 - 3.13.* *_cp313
 - 3.14.* *_cp314
-- 3.15.* *_cp315
 python_impl:
 - cpython
 target_platform:
-- osx-64
+- win-64
 zip_keys:
-- - c_compiler_version
-  - cxx_compiler_version
 - - python
   - channel_sources
