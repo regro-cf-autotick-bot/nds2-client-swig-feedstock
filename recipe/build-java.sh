@@ -7,6 +7,9 @@ set -ex
 mkdir -p _build_java
 cd _build_java
 
+# python for testing
+export PYTHON="${BUILD_PREFIX}/bin/python"
+
 # configure
 cmake \
 	${SRC_DIR} \

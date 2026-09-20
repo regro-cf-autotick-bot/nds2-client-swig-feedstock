@@ -41,6 +41,9 @@ outputs:
           then: make
       host:
         - nds2-client ${{ nds2_client_version }}.*
+      ignore_run_exports:
+        by_name:
+          - nds2-client
     tests:
       - package_contents:
           include:
@@ -62,6 +65,7 @@ outputs:
         - ${{ stdlib("c") }}
         - ${{ compiler('cxx') }}
         - cmake >=3.6
+        - python
         - swig >=3.0.7,<4.1.0a0
         - if: not win
           then:
