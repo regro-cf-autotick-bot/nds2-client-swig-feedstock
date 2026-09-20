@@ -1,0 +1,152 @@
+schema_version: 1
+
+context:
+  version: "0.16.12"
+  nds2_client_version: "0.16.8"
+
+recipe:
+  name: nds2-client-swig
+  version: ${{ version }}
+
+source:
+  url: https://software.igwn.org/sources/source/nds2-client-swig-${{ version }}.tar.bz2
+  sha256: d356296f4a137d5e95401b1279e8dbce8b4b7dc8d87d319b09d1a57331caca06
+  patches:
+    - 0001-python-add-linker-flag-for-the-directory-containing-.patch
+    - 0002-python-fix-linking-issues-with-ndscxx.patch
+    - 0003-python-use-undefined-dynamic_lookup-on-macos.patch
+    - 0004-java-fix-linking-issues-with-ndscxx.patch
+    - 0005-Added-JAVA-compatibility-detection-code-to-configura.patch
+    - 0006-cx_python-use-sysconfig-instead-of-distutils.patch
+
+build:
+  number: 9
+
+outputs:
+  - package:
+      name: nds2-client-swig
+    build:
+      dynamic_linking:
+        overdepending_behavior: error
+      script: build
+    requirements:
+      build:
+        - ${{ compiler('c') }}
+        - ${{ stdlib("c") }}
+        - ${{ compiler('cxx') }}
+        - cmake >=3.6
+        - pkg-config
+        - swig >=3.0.7,<4.1.0a0
+        - if: unix
+          then: make
+      host:
+        - nds2-client ${{ nds2_client_version }}.*
+    tests:
+      - package_contents:
+          include:
+            - nds2-client/nds.i
+            - nds2-client/nds_swig.hh
+
+  - package:
+      name: nds2-client-java
+    build:
+      dynamic_linking:
+        overdepending_behavior: error
+      script:
+        file: build-java
+      # see https://git.ligo.org/nds/nds2-client/-/issues/141
+      skip: win
+    requirements:
+      build:
+        - ${{ compiler('c') }}
+        - ${{ stdlib("c") }}
+        - ${{ compiler('cxx') }}
+        - cmake >=3.6
+        - swig >=3.0.7,<4.1.0a0
+        - if: not win
+          then:
+            - make
+            - pkg-config
+        - if: build_platform != target_platform
+          then: openjdk
+      host:
+        - openjdk
+        - nds2-client ${{ nds2_client_version }}.*
+        - ${{ pin_subpackage('nds2-client-swig', exact=True) }}
+      run:
+        - nds2-client >=${{ nds2_client_version }}
+      ignore_run_exports:
+        from_package:
+          - if: not osx
+            then: ${{ compiler('cxx') }}
+    tests:
+      - package_contents:
+          files:
+            - if: win
+              then: Lib/nds2-client/java/nds2.jar
+      - script:
+          - if: unix
+            then:
+              - test $(nds-client-config --javaclasspath) == ${PREFIX}/lib/nds2-client/java/nds2.jar
+    about:
+      summary: Java extensions for NDS2
+      description: This provides Java wrappers for the nds2 client.
+
+  - package:
+      name: python-nds2-client
+    build:
+      dynamic_linking:
+        overdepending_behavior: error
+      script:
+        file: build-python
+      skip: python_impl != 'cpython'
+    requirements:
+      build:
+        - ${{ compiler("c") }}
+        - ${{ stdlib("c") }}
+        - ${{ compiler("cxx") }}
+        - cmake >=3.6
+        - pkg-config
+        - swig >=3.0.7,<4.1.0a0
+        - if: unix
+          then: make
+        # extras for cross-compiling
+        - if: build_platform != target_platform
+          then:
+            - cross-python_${{ target_platform }}
+            - numpy
+            - python
+      host:
+        - ${{ pin_subpackage('nds2-client-swig', exact=True) }}
+        - libpython
+        - nds2-client ${{ nds2_client_version }}.*
+        - numpy
+        - python
+      run:
+        - nds2-client >=${{ nds2_client_version }}
+        - python
+      ignore_run_exports:
+        from_package:
+          - if: win
+            then: ${{ compiler('cxx') }}
+    tests:
+      - requirements:
+          run:
+            - pytest
+        script: test_nds2.py
+    about:
+      summary: Python extensions for NDS2
+      description: This provides python wrappers for the nds2 client.
+
+about:
+  license: GPL-3.0-or-later
+  license_file: COPYING
+  summary: NDS2 Client interface SWIG wrappings
+  description: This provides SWIG interface files for the NDS2 client.
+  homepage: https://wiki.ligo.org/Computing/NDSClient
+  repository: https://git.ligo.org/nds/nds2-client.git
+
+extra:
+  recipe-maintainers:
+    - duncanmmacleod
+    - emaros
